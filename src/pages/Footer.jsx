@@ -88,10 +88,10 @@ const Footer = ({ darkMode }) => {
             </h5>
             <ul>
               <li>
-                <Link href="/">Home</Link>
+                <Link to="/">Home</Link>
               </li>
               <li>
-                <Link href="/favorites">Favorites</Link>
+                <Link to="/favorites">Favorites</Link>
               </li>
             </ul>
           </Col>
