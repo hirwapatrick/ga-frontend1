@@ -542,6 +542,14 @@ const Home = () => {
                 Favorites
               </Nav.Link>
 
+              <Nav.Link
+                as={NavLink}
+                to="/admin"
+                style={{ fontFamily: "Arial, sans-serif", fontWeight: "bold" }}
+              >
+                Admin
+              </Nav.Link>
+
               <ToggleContainer>
                 <FontAwesomeIcon
                   icon={darkMode ? faSun : faMoon}
