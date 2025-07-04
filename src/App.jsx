@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
@@ -14,8 +15,7 @@ const App = () => {
         <Route path="/movie/:id" element={<MovieDetails />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/admin" element={<AdminApp />} />
-        
-        {/* Catch-all route for unknown paths */}
+        {/* fallback route to handle malformed/unknown paths */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
