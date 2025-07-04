@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from "react-router-dom";
 import {
   faEnvelope,
   faPhone,
@@ -87,10 +88,10 @@ const Footer = ({ darkMode }) => {
             </h5>
             <ul>
               <li>
-                <a href="/">Home</a>
+                <Link href="/">Home</Link>
               </li>
               <li>
-                <a href="/favorites">Favorites</a>
+                <Link href="/favorites">Favorites</Link>
               </li>
             </ul>
           </Col>
