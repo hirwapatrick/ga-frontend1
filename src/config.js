@@ -1,2 +1,2 @@
 // src/config.js
-export const API_BASE = "https://getagasobanuyeapi.onrender.com";
+export const API_BASE = "https://getagasobanuye.onrender.com";
