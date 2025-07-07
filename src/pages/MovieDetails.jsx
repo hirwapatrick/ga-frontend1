@@ -481,8 +481,10 @@ const MovieDetail = () => {
                       >
                         {email.charAt(0)}
                       </div>
-                      <strong className="text-primary">{email}</strong>
-                      <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                      <div className="d-flex flex-column">
+                        <strong className="text-primary text-wrap">{email}</strong>
+                        <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                      </div>
                     </div>
                   </div>
                   <p className="mb-0">{comment_text}</p>
