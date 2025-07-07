@@ -482,9 +482,7 @@ const MovieDetail = () => {
                       {email.charAt(0)}
                     </div>
                     <strong className="text-primary text-wrap">{email}</strong>
-                  </div>
-                  <div className="col-12 col-md-6 text-md-end text-muted">
-                    <small>{new Date(created_at).toLocaleString()}</small>
+                    <small className="text-primary text-muted">{new Date(created_at).toLocaleString()}</small>
                   </div>
                 </div>
                 <p className="mb-0">{comment_text}</p>
