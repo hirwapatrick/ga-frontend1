@@ -493,31 +493,31 @@ const MovieDetail = () => {
             </div>
           )}
         </CommentSection>
-{relatedMovies.length > 0 && (
-  <div className="mt-5">
-    <h3 className="mb-4">
-      <GoldText>Related Movies</GoldText>
-    </h3>
-    <RelatedMoviesGrid>
-      {relatedMovies.map((m) => (
-        <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
-          <img
-            src={
-              m.movie_poster?.startsWith("http")
-                ? m.movie_poster
-                : movie.movie_poster
-            }
-            alt={m.title}
-          />
-          <h6>{m.title}</h6>
-          <p>
-            {m.genre} | {m.release_year}
-          </p>
-        </RelatedMovieCard>
-      ))}
-    </RelatedMoviesGrid>
-  </div>
-)}
+        {relatedMovies.length > 0 && (
+          <div className="mt-5">
+            <h3 className="mb-4">
+              <GoldText>Related Movies</GoldText>
+            </h3>
+            <RelatedMoviesGrid>
+              {relatedMovies.map((m) => (
+                <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
+                  <img
+                    src={
+                      m.movie_poster?.startsWith("http")
+                        ? m.movie_poster
+                        : movie.movie_poster
+                    }
+                    alt={m.title}
+                  />
+                  <h6>{m.title}</h6>
+                  <p>
+                    {m.genre} | {m.release_year}
+                  </p>
+                </RelatedMovieCard>
+              ))}
+            </RelatedMoviesGrid>
+          </div>
+        )}
 
 
       </Container>
