@@ -22,19 +22,160 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import { API_BASE } from "../config";
-// ...[imports remain unchanged]
 
-const Avatar = styled.div`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #d4af37;
+// === Styled Components ===
+const PageWrapper = styled.div`
+  background-color: #0f172a;
+  min-height: 100vh;
+  color: white;
+  padding: 2rem 0;
+`;
+
+const MovieHeader = styled.div`
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+`;
+const RelatedMoviesGrid = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #1e293b;
-  text-transform: uppercase;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: start;
+`;
+
+const RelatedMovieCard = styled(Link)`
+  flex: 0 0 160px;
+  background-color: #1e293b;
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgb(212 175 55 / 0.5);
+  border: 1px solid #d4af37;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgb(212 175 55 / 0.9);
+  }
+
+  img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    border-bottom: 1px solid #d4af37;
+  }
+
+  h6 {
+    margin: 0.6rem 0 0 0.7rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #d4af37;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  p {
+    margin: 0.3rem 0 0.7rem 0.7rem;
+    font-size: 0.85rem;
+    color: #ccc;
+  }
+`;
+
+
+const GoldText = styled.span`
+  color: #d4af37;
+  font-weight: 600;
+`;
+
+const CommentSection = styled.div`
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-top: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+`;
+
+const CommentCard = styled.div`
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid #d4af37;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-2px);
+  }
+`;
+
+const CommentForm = styled(Form)`
+  .form-control {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    padding: 1rem;
+
+    &::placeholder {
+      color: lightgrey;
+      opacity: 1;
+      font-weight: 500;
+    }
+
+    &:focus {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+      color: white;
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(to right, #d4af37, #f59e0b);
+    border: none;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(to right, #f59e0b, #d4af37);
+      transform: translateY(-2px);
+    }
+  }
+`;
+
+const Timestamp = styled.small`
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-style: italic;
+  letter-spacing: 0.3px;
+`;
+
+const VideoContainer = styled.div`
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  margin-bottom: 2rem;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
 `;
 
 const MovieDetail = () => {
@@ -51,7 +192,23 @@ const MovieDetail = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [relatedMovies, setRelatedMovies] = useState([]);
 
-  const videoId = getYouTubeId(movie?.trailer_url);
+  const getYouTubeId = (urlOrId) => {
+    if (!urlOrId) return null;
+    if (urlOrId.includes("youtube.com") || urlOrId.includes("youtu.be")) {
+      try {
+        const url = new URL(urlOrId);
+        if (url.hostname === "youtu.be") {
+          return url.pathname.slice(1);
+        } else if (url.hostname.includes("youtube.com")) {
+          return url.searchParams.get("v");
+        }
+      } catch {
+        return null;
+      }
+    }
+    if (urlOrId.length === 11) return urlOrId;
+    return null;
+  };
 
   useEffect(() => {
     axios
@@ -63,42 +220,42 @@ const MovieDetail = () => {
       .catch(() => setMovieError(true));
   }, [id]);
 
-  useEffect(() => {
-    fetchComments();
-    fetchRelatedMovies();
-  }, [id]);
-
   const fetchComments = () => {
     setLoadingComments(true);
     axios
       .get(`${API_BASE}/movies/${id}/comments`)
       .then((res) => setComments(res.data))
-      .catch(console.error)
+      .catch((err) => console.error(err))
       .finally(() => setLoadingComments(false));
   };
 
-  const fetchRelatedMovies = () => {
+  useEffect(() => {
+    fetchComments();
+  }, [id]);
+
+  useEffect(() => {
     axios
       .get(`${API_BASE}/movies/${id}/related`)
       .then((res) => setRelatedMovies(res.data))
-      .catch(console.error);
-  };
+      .catch((err) => console.error("Failed to load related movies", err));
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
-
     if (!email.trim() || !commentText.trim()) {
       setErrorMsg("Email and Comment are required.");
       return;
     }
-
     setSubmitting(true);
     try {
-      const res = await axios.post(`${API_BASE}/movies/${id}/comments`, {
-        email: email.trim(),
-        comment_text: commentText.trim(),
-      });
+      const res = await axios.post(
+        `${API_BASE}/movies/${id}/comments`,
+        {
+          email: email.trim(),
+          comment_text: commentText.trim(),
+        }
+      );
       setComments((prev) => [res.data, ...prev]);
       setEmail("");
       setCommentText("");
@@ -111,11 +268,13 @@ const MovieDetail = () => {
 
   const handleLike = async () => {
     try {
-      const url = liked
-        ? `${API_BASE}/movies/${id}/unlike`
-        : `${API_BASE}/movies/${id}/like`;
-      await axios.post(url);
-      setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+      if (liked) {
+        await axios.post(`${API_BASE}/movies/${id}/unlike`);
+        setLikeCount((prev) => prev - 1);
+      } else {
+        await axios.post(`${API_BASE}/movies/${id}/like`);
+        setLikeCount((prev) => prev + 1);
+      }
       setLiked(!liked);
     } catch (err) {
       console.error("Failed to update like", err);
@@ -143,6 +302,8 @@ const MovieDetail = () => {
     );
   }
 
+  const videoId = getYouTubeId(movie.trailer_url);
+
   return (
     <PageWrapper>
       <Container className="my-5" style={{ maxWidth: "900px" }}>
@@ -161,12 +322,14 @@ const MovieDetail = () => {
           <h1 className="mb-3">
             <GoldText>{movie.title}</GoldText>
           </h1>
+
           <div className="mb-4">
             <Badge bg="primary" className="me-2">
               {movie.genre}
             </Badge>
             <Badge bg="secondary">{movie.release_year}</Badge>
           </div>
+
           <p className="mb-4" style={{ whiteSpace: "pre-line" }}>
             {movie.description}
           </p>
@@ -202,12 +365,12 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="primary"
-            href={movie.video_url || "#"}
+            href={movie.video_url && movie.video_url.trim() !== "" ? movie.video_url : "#"}
             target="_blank"
             rel="noopener noreferrer"
             className="d-flex align-items-center gap-2"
             style={{ minWidth: "140px" }}
-            disabled={!movie.video_url}
+            disabled={!movie.video_url || movie.video_url.trim() === ""}
           >
             <FontAwesomeIcon icon={faPlay} />
             Watch Movie
@@ -216,28 +379,32 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="success"
-            href={movie.download_url || "#"}
+            href={movie.download_url && movie.download_url.trim() !== "" ? movie.download_url : "#"}
             target="_blank"
             rel="noopener noreferrer"
             download
             className="d-flex align-items-center gap-2"
             style={{ minWidth: "140px" }}
-            disabled={!movie.download_url}
+            disabled={!movie.download_url && !movie.video_url}
           >
             <FontAwesomeIcon icon={faDownload} />
             Download
           </Button>
         </ButtonGroup>
 
-        {/* === Comments Section === */}
         <CommentSection>
           <h3 className="mb-4">
             <GoldText>Comments</GoldText> <Badge bg="secondary">{comments.length}</Badge>
           </h3>
 
           <CommentForm onSubmit={handleSubmit} className="mb-4">
-            {errorMsg && <Alert variant="danger">{errorMsg}</Alert>}
-            <Form.Group className="mb-3">
+            {errorMsg && (
+              <Alert variant="danger" className="mb-3">
+                {errorMsg}
+              </Alert>
+            )}
+
+            <Form.Group controlId="formEmail" className="mb-3">
               <Form.Label>Your Email</Form.Label>
               <Form.Control
                 type="email"
@@ -248,18 +415,20 @@ const MovieDetail = () => {
                 required
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+
+            <Form.Group controlId="formComment" className="mb-3">
               <Form.Label>Your Comment</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                placeholder="Share your thoughts..."
+                placeholder="Share your thoughts about this movie..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 disabled={submitting}
                 required
               />
             </Form.Group>
+
             <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <>
@@ -267,6 +436,8 @@ const MovieDetail = () => {
                     as="span"
                     animation="border"
                     size="sm"
+                    role="status"
+                    aria-hidden="true"
                     className="me-2"
                   />
                   Submitting...
@@ -286,30 +457,42 @@ const MovieDetail = () => {
             </div>
           ) : comments.length === 0 ? (
             <Alert variant="info" className="text-center">
-              No comments yet. Be the first!
+              No comments yet. Be the first to comment!
             </Alert>
           ) : (
-            <Container fluid="md">
-              {comments.map(({ id, email, comment_text, created_at }) => (
-                <Card key={id} className="mb-3 p-3">
-                  <div className="d-flex align-items-center gap-3 mb-2">
-                    <Avatar>{email[0]?.toUpperCase()}</Avatar>
-                    <div>
-                      <strong className="text-primary">{email}</strong>
-                      <br />
-                      <small className="text-muted">
-                        {new Date(created_at).toLocaleString()}
-                      </small>
+          <Container fluid="md">
+            {comments.map(({ id, email, comment_text, created_at }) => (
+              <Card key={id} className="mb-3 p-3">
+                <div className="row align-items-center mb-2">
+                  <div className="col-12 col-md-6 d-flex align-items-center gap-3">
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "50%",
+                        backgroundColor: "#d4af37",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "bold",
+                        color: "#1e293b",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {email.charAt(0)}
                     </div>
+                    <strong className="text-primary text-wrap">{email}</strong>
+                    <small className="text-primary text-muted">{new Date(created_at).toLocaleString()}</small>
                   </div>
-                  <p className="mb-0">{comment_text}</p>
-                </Card>
+                </div>
+                <p className="mb-0">{comment_text}</p>
+              </Card>
+            ))}
+          </Container>
               ))}
-            </Container>
+            </div>
           )}
         </CommentSection>
-
-        {/* === Related Movies === */}
         {relatedMovies.length > 0 && (
           <div className="mt-5">
             <h3 className="mb-4">
@@ -335,6 +518,8 @@ const MovieDetail = () => {
             </RelatedMoviesGrid>
           </div>
         )}
+
+
       </Container>
     </PageWrapper>
   );
