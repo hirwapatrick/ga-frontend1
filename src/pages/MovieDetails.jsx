@@ -9,7 +9,6 @@ import {
   Spinner,
   Alert,
   Badge,
-  Card,
 } from "react-bootstrap";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -40,7 +39,6 @@ const MovieHeader = styled.div`
   margin-bottom: 2rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 `;
-
 const RelatedMoviesGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -88,6 +86,7 @@ const RelatedMovieCard = styled(Link)`
   }
 `;
 
+
 const GoldText = styled.span`
   color: #d4af37;
   font-weight: 600;
@@ -100,6 +99,20 @@ const CommentSection = styled.div`
   margin-top: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+`;
+
+const CommentCard = styled.div`
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid #d4af37;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-2px);
+  }
 `;
 
 const CommentForm = styled(Form)`
@@ -139,6 +152,13 @@ const CommentForm = styled(Form)`
   }
 `;
 
+const Timestamp = styled.small`
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-style: italic;
+  letter-spacing: 0.3px;
+`;
+
 const VideoContainer = styled.div`
   position: relative;
   padding-bottom: 56.25%;
@@ -174,12 +194,20 @@ const MovieDetail = () => {
 
   const getYouTubeId = (urlOrId) => {
     if (!urlOrId) return null;
-    try {
-      const url = new URL(urlOrId);
-      if (url.hostname === "youtu.be") return url.pathname.slice(1);
-      if (url.hostname.includes("youtube.com")) return url.searchParams.get("v");
-    } catch {}
-    return urlOrId.length === 11 ? urlOrId : null;
+    if (urlOrId.includes("youtube.com") || urlOrId.includes("youtu.be")) {
+      try {
+        const url = new URL(urlOrId);
+        if (url.hostname === "youtu.be") {
+          return url.pathname.slice(1);
+        } else if (url.hostname.includes("youtube.com")) {
+          return url.searchParams.get("v");
+        }
+      } catch {
+        return null;
+      }
+    }
+    if (urlOrId.length === 11) return urlOrId;
+    return null;
   };
 
   useEffect(() => {
@@ -192,13 +220,17 @@ const MovieDetail = () => {
       .catch(() => setMovieError(true));
   }, [id]);
 
-  useEffect(() => {
+  const fetchComments = () => {
     setLoadingComments(true);
     axios
       .get(`${API_BASE}/movies/${id}/comments`)
       .then((res) => setComments(res.data))
       .catch((err) => console.error(err))
       .finally(() => setLoadingComments(false));
+  };
+
+  useEffect(() => {
+    fetchComments();
   }, [id]);
 
   useEffect(() => {
@@ -217,10 +249,13 @@ const MovieDetail = () => {
     }
     setSubmitting(true);
     try {
-      const res = await axios.post(`${API_BASE}/movies/${id}/comments`, {
-        email: email.trim(),
-        comment_text: commentText.trim(),
-      });
+      const res = await axios.post(
+        `${API_BASE}/movies/${id}/comments`,
+        {
+          email: email.trim(),
+          comment_text: commentText.trim(),
+        }
+      );
       setComments((prev) => [res.data, ...prev]);
       setEmail("");
       setCommentText("");
@@ -330,11 +365,12 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="primary"
-            href={movie.video_url || "#"}
+            href={movie.video_url && movie.video_url.trim() !== "" ? movie.video_url : "#"}
             target="_blank"
             rel="noopener noreferrer"
             className="d-flex align-items-center gap-2"
-            disabled={!movie.video_url}
+            style={{ minWidth: "140px" }}
+            disabled={!movie.video_url || movie.video_url.trim() === ""}
           >
             <FontAwesomeIcon icon={faPlay} />
             Watch Movie
@@ -343,12 +379,13 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="success"
-            href={movie.download_url || "#"}
+            href={movie.download_url && movie.download_url.trim() !== "" ? movie.download_url : "#"}
             target="_blank"
             rel="noopener noreferrer"
             download
             className="d-flex align-items-center gap-2"
-            disabled={!movie.download_url}
+            style={{ minWidth: "140px" }}
+            disabled={!movie.download_url && !movie.video_url}
           >
             <FontAwesomeIcon icon={faDownload} />
             Download
@@ -357,32 +394,37 @@ const MovieDetail = () => {
 
         <CommentSection>
           <h3 className="mb-4">
-            <GoldText>Comments</GoldText>{" "}
-            <Badge bg="secondary">{comments.length}</Badge>
+            <GoldText>Comments</GoldText> <Badge bg="secondary">{comments.length}</Badge>
           </h3>
 
           <CommentForm onSubmit={handleSubmit} className="mb-4">
-            {errorMsg && <Alert variant="danger">{errorMsg}</Alert>}
+            {errorMsg && (
+              <Alert variant="danger" className="mb-3">
+                {errorMsg}
+              </Alert>
+            )}
 
-            <Form.Group className="mb-3">
+            <Form.Group controlId="formEmail" className="mb-3">
               <Form.Label>Your Email</Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting}
                 required
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
+            <Form.Group controlId="formComment" className="mb-3">
               <Form.Label>Your Comment</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                placeholder="Write your comment..."
+                placeholder="Share your thoughts about this movie..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
+                disabled={submitting}
                 required
               />
             </Form.Group>
@@ -394,6 +436,8 @@ const MovieDetail = () => {
                     as="span"
                     animation="border"
                     size="sm"
+                    role="status"
+                    aria-hidden="true"
                     className="me-2"
                   />
                   Submitting...
@@ -416,38 +460,37 @@ const MovieDetail = () => {
               No comments yet. Be the first to comment!
             </Alert>
           ) : (
-            <Container fluid="md">
+            <div>
               {comments.map(({ id, email, comment_text, created_at }) => (
-                <Card key={id} className="mb-3 p-3">
-                  <div className="d-flex align-items-center gap-3 mb-2">
-                    <div
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        backgroundColor: "#d4af37",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "bold",
-                        color: "#1e293b",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {email.charAt(0)}
+                <CommentCard key={id}>
+                  <div className="d-flex justify-content-between mb-2 align-items-center">
+                    <div className="d-flex align-items-center gap-3">
+                      <div
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          backgroundColor: "#d4af37",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "bold",
+                          color: "#1e293b",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {email.charAt(0)}
+                      </div>
+                      <strong className="text-primary">{email}</strong>
+                      <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
                     </div>
-                    <strong>{email}</strong>
-                    <small className="text-muted">
-                      {new Date(created_at).toLocaleString()}
-                    </small>
                   </div>
                   <p className="mb-0">{comment_text}</p>
-                </Card>
+                </CommentCard>
               ))}
-            </Container>
+            </div>
           )}
         </CommentSection>
-
         {relatedMovies.length > 0 && (
           <div className="mt-5">
             <h3 className="mb-4">
@@ -473,6 +516,8 @@ const MovieDetail = () => {
             </RelatedMoviesGrid>
           </div>
         )}
+
+
       </Container>
     </PageWrapper>
   );
