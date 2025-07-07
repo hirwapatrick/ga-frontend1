@@ -13,7 +13,7 @@ import {
   FormControl,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { API_BASE } from "../config"; // ✅ Replaces hardcoded URL
+import { API_BASE } from "../config";
 import "../styles/AdminDashboard.css";
 
 export default function AdminDashboard() {
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
     if (isAdmin !== "true") {
-      navigate("/admin-login"); // Adjust this route as needed
+      navigate("/admin-login");
     } else {
       fetchMovies();
     }
@@ -90,15 +90,8 @@ export default function AdminDashboard() {
 
     if (mode === "edit" && movie) {
       setCurrentMovie(movie);
-
-      // ✅ Set image preview from backend folder
-      if (movie.movie_poster) {
-        setPosterPreview(`${API_BASE}${movie.movie_poster}`);
-      } else {
-        setPosterPreview(null);
-      }
+      setPosterPreview(movie.movie_poster || null);
     } else {
-      // Reset for add mode
       setCurrentMovie({
         id: null,
         title: "",
@@ -139,14 +132,7 @@ export default function AdminDashboard() {
       download_url,
     } = currentMovie;
 
-    if (
-      !title ||
-      !genre ||
-      !release_year ||
-      !description ||
-      !trailer_url ||
-      !video_url
-    ) {
+    if (!title || !genre || !release_year || !description || !trailer_url || !video_url) {
       alert("Please fill in all required fields");
       return;
     }
@@ -209,9 +195,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete this comment?")) return;
     try {
       await axios.delete(`${API_BASE}/comments/${id}`);
-      const res = await axios.get(
-        `${API_BASE}/movies/${selectedMovie.id}/comments`
-      );
+      const res = await axios.get(`${API_BASE}/movies/${selectedMovie.id}/comments`);
       setComments(res.data);
     } catch {
       alert("Failed to delete comment");
@@ -224,23 +208,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {/* Back to Top Button */}
-      <Button
-        variant="gold"
-        className="back-to-top"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
+      <Button variant="gold" className="back-to-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
         <FontAwesomeIcon icon={faArrowUp} />
       </Button>
 
       <div className="header-section">
-        <Button
-          variant="outline-gold"
-          onClick={() => navigate("/")}
-          className="mb-4"
-        >
-          <FontAwesomeIcon icon={faHome} className="me-2" />
-          Back to Home
+        <Button variant="outline-gold" onClick={() => navigate("/")} className="mb-4">
+          <FontAwesomeIcon icon={faHome} className="me-2" /> Back to Home
         </Button>
         <h2 className="text-center mb-4">Admin Dashboard - GetAgasobanuye</h2>
       </div>
@@ -255,21 +229,11 @@ export default function AdminDashboard() {
             placeholder="Search movies..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{
-              backgroundColor: "#1e1e1e",
-              color: "gold",
-              borderColor: "gold",
-            }}
+            style={{ backgroundColor: "#1e1e1e", color: "gold", borderColor: "gold" }}
           />
         </InputGroup>
 
-        <Button
-          variant="gold"
-          className="mb-4"
-          onClick={() => openMovieModal("add")}
-        >
-          Add New Movie
-        </Button>
+        <Button variant="gold" className="mb-4" onClick={() => openMovieModal("add")}>Add New Movie</Button>
       </div>
 
       {loadingMovies ? (
@@ -295,29 +259,9 @@ export default function AdminDashboard() {
                 <td className="white-text">{movie.genre}</td>
                 <td className="white-text">{movie.release_year}</td>
                 <td>
-                  <Button
-                    variant="gold"
-                    size="sm"
-                    onClick={() => openMovieModal("edit", movie)}
-                    className="me-2"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="gold"
-                    size="sm"
-                    onClick={() => handleMovieDelete(movie.id)}
-                    className="me-2"
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    variant="gold"
-                    size="sm"
-                    onClick={() => openCommentsModal(movie)}
-                  >
-                    Comments
-                  </Button>
+                  <Button variant="gold" size="sm" onClick={() => openMovieModal("edit", movie)} className="me-2">Edit</Button>
+                  <Button variant="gold" size="sm" onClick={() => handleMovieDelete(movie.id)} className="me-2">Delete</Button>
+                  <Button variant="gold" size="sm" onClick={() => openCommentsModal(movie)}>Comments</Button>
                 </td>
               </tr>
             ))}
@@ -328,117 +272,65 @@ export default function AdminDashboard() {
       {/* Movie Modal */}
       <Modal show={showMovieModal} onHide={closeMovieModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>
-            {modalMode === "add" ? "Add Movie" : "Edit Movie"}
-          </Modal.Title>
+          <Modal.Title>{modalMode === "add" ? "Add Movie" : "Edit Movie"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group controlId="title" className="mb-2">
               <Form.Label>Title</Form.Label>
-              <Form.Control
-                name="title"
-                value={currentMovie.title}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="title" value={currentMovie.title} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="genre" className="mb-2">
               <Form.Label>Genre</Form.Label>
-              <Form.Select
-                name="genre"
-                value={currentMovie.genre}
-                onChange={handleMovieChange}
-              >
+              <Form.Select name="genre" value={currentMovie.genre} onChange={handleMovieChange}>
                 <option value="">Select Genre</option>
-                {genresList.map((g) => (
-                  <option key={g}>{g}</option>
-                ))}
+                {genresList.map((g) => (<option key={g}>{g}</option>))}
               </Form.Select>
             </Form.Group>
             <Form.Group controlId="release_year" className="mb-2">
               <Form.Label>Release Year</Form.Label>
-              <Form.Control
-                name="release_year"
-                type="number"
-                value={currentMovie.release_year}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="release_year" type="number" value={currentMovie.release_year} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="description" className="mb-2">
               <Form.Label>Description</Form.Label>
-              <Form.Control
-                name="description"
-                as="textarea"
-                rows={2}
-                value={currentMovie.description}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="description" as="textarea" rows={2} value={currentMovie.description} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="trailer_url" className="mb-2">
               <Form.Label>Trailer URL</Form.Label>
-              <Form.Control
-                name="trailer_url"
-                value={currentMovie.trailer_url}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="trailer_url" value={currentMovie.trailer_url} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="video_url" className="mb-2">
               <Form.Label>Video URL</Form.Label>
-              <Form.Control
-                name="video_url"
-                value={currentMovie.video_url}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="video_url" value={currentMovie.video_url} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="download_url" className="mb-2">
               <Form.Label>Download URL</Form.Label>
-              <Form.Control
-                name="download_url"
-                value={currentMovie.download_url || ""}
-                onChange={handleMovieChange}
-              />
+              <Form.Control name="download_url" value={currentMovie.download_url || ""} onChange={handleMovieChange} />
             </Form.Group>
             <Form.Group controlId="poster" className="mb-2">
               <Form.Label>Movie Poster</Form.Label>
-              <Form.Control
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  setPosterFile(file);
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => setPosterPreview(reader.result);
-                    reader.readAsDataURL(file);
-                  } else {
-                    setPosterPreview(null);
-                  }
-                }}
-              />
+              <Form.Control type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files[0];
+                setPosterFile(file);
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => setPosterPreview(reader.result);
+                  reader.readAsDataURL(file);
+                } else {
+                  setPosterPreview(null);
+                }
+              }} />
             </Form.Group>
             {posterPreview && (
               <div className="text-center my-3">
-                <img
-                  src={posterPreview}
-                  alt="Poster Preview"
-                  style={{
-                    width: "180px",
-                    height: "auto",
-                    borderRadius: "8px",
-                    border: "1px solid gold",
-                  }}
-                />
+                <img src={posterPreview} alt="Poster Preview" style={{ width: "180px", height: "auto", borderRadius: "8px", border: "1px solid gold" }} />
               </div>
             )}
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="gold-outline" onClick={closeMovieModal}>
-            Cancel
-          </Button>
-          <Button variant="gold" onClick={handleMovieSubmit}>
-            {modalMode === "add" ? "Add" : "Update"}
-          </Button>
+          <Button variant="gold-outline" onClick={closeMovieModal}>Cancel</Button>
+          <Button variant="gold" onClick={handleMovieSubmit}>{modalMode === "add" ? "Add" : "Update"}</Button>
         </Modal.Footer>
       </Modal>
 
@@ -457,23 +349,14 @@ export default function AdminDashboard() {
               {comments.map((c) => (
                 <ListGroup.Item key={c.id}>
                   <strong>{c.email}</strong> — {c.comment_text}
-                  <Button
-                    size="sm"
-                    variant="gold-outline"
-                    className="float-end"
-                    onClick={() => handleCommentDelete(c.id)}
-                  >
-                    Delete
-                  </Button>
+                  <Button size="sm" variant="gold-outline" className="float-end" onClick={() => handleCommentDelete(c.id)}>Delete</Button>
                 </ListGroup.Item>
               ))}
             </ListGroup>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="gold-outline" onClick={closeCommentsModal}>
-            Close
-          </Button>
+          <Button variant="gold-outline" onClick={closeCommentsModal}>Close</Button>
         </Modal.Footer>
       </Modal>
     </div>

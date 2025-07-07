@@ -354,7 +354,7 @@ const ScrollableRow = ({ movies }) => {
               <div className="movie-card">
                 <Card.Img
                   variant="top"
-                  src={`${API_BASE}${movie.movie_poster}`}
+                  src={movie.movie_poster}
                   alt={movie.title}
                   className="card-img-top"
                   style={{
@@ -616,7 +616,7 @@ const Home = () => {
                       }}
                     >
                       <img
-                        src={`${API_BASE}${movie.movie_poster}`}
+                        src={movie.movie_poster}
                         alt={movie.title}
                         style={{
                           width: 40,
@@ -653,7 +653,7 @@ const Home = () => {
               <Link to={`/movie/${movie.id}`}>
                 <img
                   className="d-block w-100"
-                  src={`${API_BASE}${movie.movie_poster}`}
+                  src={movie.movie_poster}
                   alt={movie.title}
                   style={{
                     maxHeight: "500px",

@@ -204,7 +204,7 @@ const Favorites = () => {
                     src={
                       movie.movie_poster?.startsWith("http")
                         ? movie.movie_poster
-                        : `${API_BASE}${movie.movie_poster}`
+                        : movie.movie_poster
                     }
                     alt={movie.title}
                     style={{ height: "220px", objectFit: "cover" }}

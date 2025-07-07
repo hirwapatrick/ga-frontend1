@@ -503,7 +503,7 @@ const MovieDetail = () => {
             src={
               m.movie_poster?.startsWith("http")
                 ? m.movie_poster
-                : `${API_BASE}${m.movie_poster}`
+                : movie.movie_poster
             }
             alt={m.title}
           />
