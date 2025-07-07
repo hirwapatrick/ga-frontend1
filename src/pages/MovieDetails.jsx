@@ -460,33 +460,37 @@ const MovieDetail = () => {
               No comments yet. Be the first to comment!
             </Alert>
           ) : (
-            <div>
-              {comments.map(({ id, email, comment_text, created_at }) => (
-                <CommentCard key={id}>
-                  <div className="d-flex justify-content-between mb-2 align-items-center">
-                    <div className="d-flex align-items-center gap-3">
-                      <div
-                        style={{
-                          width: "36px",
-                          height: "36px",
-                          borderRadius: "50%",
-                          backgroundColor: "#d4af37",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: "bold",
-                          color: "#1e293b",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {email.charAt(0)}
-                      </div>
-                      <strong className="text-primary">{email}</strong>
+          <Container fluid="md">
+            {comments.map(({ id, email, comment_text, created_at }) => (
+              <Card key={id} className="mb-3 p-3">
+                <div className="row align-items-center mb-2">
+                  <div className="col-12 col-md-6 d-flex align-items-center gap-3">
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "50%",
+                        backgroundColor: "#d4af37",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "bold",
+                        color: "#1e293b",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {email.charAt(0)}
                     </div>
-                    <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                    <strong className="text-primary text-wrap">{email}</strong>
                   </div>
-                  <p className="mb-0">{comment_text}</p>
-                </CommentCard>
+                  <div className="col-12 col-md-6 text-md-end text-muted">
+                    <small>{new Date(created_at).toLocaleString()}</small>
+                  </div>
+                </div>
+                <p className="mb-0">{comment_text}</p>
+              </Card>
+            ))}
+          </Container>
               ))}
             </div>
           )}
