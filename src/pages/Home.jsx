@@ -453,20 +453,19 @@ const Home = () => {
   };
 
   useEffect(() => {
-    axios.get(`${API_BASE}/movies`).then((res) => {
-      // Simulate each movie's upload time as a timestamp (within last 6 hours)
-      const now = Date.now();
-      const simulated = res.data.map((movie) => {
-        const randomPastTime = now - Math.floor(Math.random() * 6 * 60 * 60 * 1000); // random past time within 6 hours
-        return {
-          ...movie,
-          uploadTime: randomPastTime,
-          uploaded: timeSince(randomPastTime),
-        };
+      axios.get(`${API_BASE}/movies`).then((res) => {
+        const now = Date.now();
+        const updatedMovies = res.data.map((movie) => {
+          const uploadTime = Date.parse(movie.created_at); // use actual created_at
+          return {
+            ...movie,
+            uploadTime,
+            uploaded: timeSince(uploadTime),
+          };
+        });
+        setMovies(updatedMovies);
+        setLoading(false);
       });
-      setMovies(simulated);
-      setLoading(false);
-    });
   }, []);
 
   // Update currentTime every minute, to refresh "time ago"
