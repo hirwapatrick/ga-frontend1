@@ -457,12 +457,20 @@ const Home = () => {
       .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
-          let dateStr = movie.created_at.replace(" ", "T");
-          let uploadTime = Date.parse(dateStr);
-          if (isNaN(uploadTime)) {
-            console.warn("Invalid created_at for movie id:", movie.id, movie.created_at);
-            uploadTime = now;
+          let uploadTime;
+        
+          if (movie.created_at && typeof movie.created_at === "string") {
+            let dateStr = movie.created_at.replace(" ", "T");
+            uploadTime = Date.parse(dateStr);
+            if (isNaN(uploadTime)) {
+              console.warn("Invalid created_at for movie id:", movie.id, movie.created_at);
+              uploadTime = Date.now();
+            }
+          } else {
+            console.warn("Missing created_at for movie id:", movie.id);
+            uploadTime = Date.now();
           }
+        
           return {
             ...movie,
             uploadTime,
