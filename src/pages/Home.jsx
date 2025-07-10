@@ -456,16 +456,18 @@ const Home = () => {
       axios.get(`${API_BASE}/movies`).then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
-          const uploadTime = Date.parse(movie.created_at); // use actual created_at
+          let dateStr = movie.created_at.replace(" ", "T"); 
+          let uploadTime = Date.parse(dateStr);
+          if (isNaN(uploadTime)) {
+            console.warn("Invalid created_at for movie id:", movie.id, movie.created_at);
+            uploadTime = Date.now();
+          }
           return {
             ...movie,
             uploadTime,
             uploaded: timeSince(uploadTime),
           };
         });
-        setMovies(updatedMovies);
-        setLoading(false);
-      });
   }, []);
 
   // Update currentTime every minute, to refresh "time ago"
