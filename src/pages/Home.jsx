@@ -457,20 +457,12 @@ const Home = () => {
       .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
-          let uploadTime;
-        
-          if (movie.created_at && typeof movie.created_at === "string") {
-            let dateStr = movie.created_at.replace(" ", "T");
-            uploadTime = Date.parse(dateStr);
-            if (isNaN(uploadTime)) {
-              console.warn("Invalid created_at for movie id:", movie.id, movie.created_at);
-              uploadTime = Date.now();
-            }
-          } else {
+          if (!movie.created_at) {
             console.warn("Missing created_at for movie id:", movie.id);
-            uploadTime = Date.now();
+            return { ...movie, uploaded: "Unknown" };
           }
-        
+  
+          const uploadTime = new Date(movie.created_at).getTime();
           return {
             ...movie,
             uploadTime,
@@ -485,6 +477,7 @@ const Home = () => {
         setLoading(false);
       });
   }, []);
+
 
 
   // Update currentTime every minute, to refresh "time ago"
