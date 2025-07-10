@@ -453,14 +453,15 @@ const Home = () => {
   };
 
   useEffect(() => {
-      axios.get(`${API_BASE}/movies`).then((res) => {
+    axios.get(`${API_BASE}/movies`)
+      .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
-          let dateStr = movie.created_at.replace(" ", "T"); 
+          let dateStr = movie.created_at.replace(" ", "T");
           let uploadTime = Date.parse(dateStr);
           if (isNaN(uploadTime)) {
             console.warn("Invalid created_at for movie id:", movie.id, movie.created_at);
-            uploadTime = Date.now();
+            uploadTime = now;
           }
           return {
             ...movie,
@@ -468,7 +469,15 @@ const Home = () => {
             uploaded: timeSince(uploadTime),
           };
         });
+        setMovies(updatedMovies);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch movies:", error);
+        setLoading(false);
+      });
   }, []);
+
 
   // Update currentTime every minute, to refresh "time ago"
   useEffect(() => {
