@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.getagasobanuye.xyz/sitemap.xml
+Sitemap: https://www.getagasobanuye.xyz/main-sitemap.xml
