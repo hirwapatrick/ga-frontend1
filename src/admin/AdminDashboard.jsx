@@ -77,7 +77,8 @@ export default function AdminDashboard() {
   const fetchMovies = async () => {
     setLoadingMovies(true);
     try {
-      const res = await axios.get(`${API_BASE}/movies`);
+      // Fetch first 10 movies from /movies/admin
+      const res = await axios.get(`${API_BASE}/movies/admin?page=1&limit=10`);
       setMovies(res.data);
     } catch {
       alert("Failed to load movies");
@@ -202,6 +203,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Filter movies locally based on searchText
   const filteredMovies = movies.filter((m) =>
     m.title.toLowerCase().includes(searchText.toLowerCase())
   );
