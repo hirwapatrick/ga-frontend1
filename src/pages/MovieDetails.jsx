@@ -86,7 +86,6 @@ const RelatedMovieCard = styled(Link)`
   }
 `;
 
-
 const GoldText = styled.span`
   color: #d4af37;
   font-weight: 600;
@@ -249,13 +248,10 @@ const MovieDetail = () => {
     }
     setSubmitting(true);
     try {
-      const res = await axios.post(
-        `${API_BASE}/movies/${id}/comments`,
-        {
-          email: email.trim(),
-          comment_text: commentText.trim(),
-        }
-      );
+      const res = await axios.post(`${API_BASE}/movies/${id}/comments`, {
+        email: email.trim(),
+        comment_text: commentText.trim(),
+      });
       setComments((prev) => [res.data, ...prev]);
       setEmail("");
       setCommentText("");
@@ -339,7 +335,8 @@ const MovieDetail = () => {
               variant={liked ? "danger" : "outline-danger"}
               onClick={handleLike}
             >
-              <FontAwesomeIcon icon={liked ? faHeart : farHeart} /> {likeCount} Likes
+              <FontAwesomeIcon icon={liked ? faHeart : farHeart} /> {likeCount}{" "}
+              Likes
             </Button>
             <Button variant="outline-primary">
               <FontAwesomeIcon icon={faComment} /> {comments.length} Comments
@@ -365,7 +362,11 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="primary"
-            href={movie.video_url && movie.video_url.trim() !== "" ? movie.video_url : "#"}
+            href={
+              movie.video_url && movie.video_url.trim() !== ""
+                ? movie.video_url
+                : "#"
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="d-flex align-items-center gap-2"
@@ -379,7 +380,11 @@ const MovieDetail = () => {
           <Button
             as="a"
             variant="success"
-            href={movie.download_url && movie.download_url.trim() !== "" ? movie.download_url : "#"}
+            href={
+              movie.download_url && movie.download_url.trim() !== ""
+                ? movie.download_url
+                : "#"
+            }
             target="_blank"
             rel="noopener noreferrer"
             download
@@ -394,7 +399,8 @@ const MovieDetail = () => {
 
         <CommentSection>
           <h3 className="mb-4">
-            <GoldText>Comments</GoldText> <Badge bg="secondary">{comments.length}</Badge>
+            <GoldText>Comments</GoldText>{" "}
+            <Badge bg="secondary">{comments.length}</Badge>
           </h3>
 
           <CommentForm onSubmit={handleSubmit} className="mb-4">
@@ -483,7 +489,9 @@ const MovieDetail = () => {
                       </div>
                       <strong className="text-primary">{email}</strong>
                     </div>
-                    <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                    <Timestamp>
+                      {new Date(created_at).toLocaleString()}
+                    </Timestamp>
                   </div>
                   <p className="mb-0">{comment_text}</p>
                 </CommentCard>
@@ -491,33 +499,31 @@ const MovieDetail = () => {
             </div>
           )}
         </CommentSection>
-{relatedMovies.length > 0 && (
-  <div className="mt-5">
-    <h3 className="mb-4">
-      <GoldText>Related Movies</GoldText>
-    </h3>
-    <RelatedMoviesGrid>
-      {relatedMovies.map((m) => (
-        <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
-          <img
-            src={
-              m.movie_poster?.startsWith("http")
-                ? m.movie_poster
-                : movie.movie_poster
-            }
-            alt={m.title}
-          />
-          <h6>{m.title}</h6>
-          <p>
-            {m.genre} | {m.release_year}
-          </p>
-        </RelatedMovieCard>
-      ))}
-    </RelatedMoviesGrid>
-  </div>
-)}
-
-
+        {relatedMovies.length > 0 && (
+          <div className="mt-5">
+            <h3 className="mb-4">
+              <GoldText>Related Movies</GoldText>
+            </h3>
+            <RelatedMoviesGrid>
+              {relatedMovies.map((m) => (
+                <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
+                  <img
+                    src={
+                      m.movie_poster?.startsWith("http")
+                        ? m.movie_poster
+                        : movie.movie_poster
+                    }
+                    alt={m.title}
+                  />
+                  <h6>{m.title}</h6>
+                  <p>
+                    {m.genre} | {m.release_year}
+                  </p>
+                </RelatedMovieCard>
+              ))}
+            </RelatedMoviesGrid>
+          </div>
+        )}
       </Container>
     </PageWrapper>
   );
