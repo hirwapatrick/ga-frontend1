@@ -93,6 +93,11 @@ const Footer = ({ darkMode }) => {
               <li>
                 <Link to="/favorites">Favorites</Link>
               </li>
+              <li>
+              <a href="https://amzn.to/3IK8qdU">
+                About
+              </a>
+              </li>
             </ul>
           </Col>
           <Col md={4}>
@@ -116,12 +121,6 @@ const Footer = ({ darkMode }) => {
             <p>
               <FontAwesomeIcon icon={faPhone} className="me-2 text-warning" />
               Phone: +250 795 217 927
-            </p>
-            <p>
-              <FontAwesomeIcon icon={faPhone} className="me-2 text-warning" />
-              <a href="https://amzn.to/3IK8qdU">
-                About
-              </a>
             </p>
             <p>
               <FontAwesomeIcon
