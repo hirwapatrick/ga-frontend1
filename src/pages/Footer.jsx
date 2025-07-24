@@ -118,6 +118,12 @@ const Footer = ({ darkMode }) => {
               Phone: +250 795 217 927
             </p>
             <p>
+              <FontAwesomeIcon icon={faPhone} className="me-2 text-warning" />
+              <a href="https://amzn.to/3IK8qdU">
+                About
+              </a>
+            </p>
+            <p>
               <FontAwesomeIcon
                 icon={faMapMarkerAlt}
                 className="me-2 text-warning"
