@@ -93,11 +93,6 @@ const Footer = ({ darkMode }) => {
               <li>
                 <Link to="/favorites">Favorites</Link>
               </li>
-              <li>
-              <a href="https://amzn.to/3IK8qdU">
-                About
-              </a>
-              </li>
             </ul>
           </Col>
           <Col md={4}>
