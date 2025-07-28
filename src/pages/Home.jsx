@@ -781,7 +781,7 @@ const Home = () => {
 
       {/* WhatsApp Button */}
       <WhatsAppButton
-        show={true}
+        show={showBackToTop}
         as="a"
         href="https://wa.me/250795217927"
         target="_blank"
