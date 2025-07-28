@@ -336,9 +336,6 @@ const WhatsAppButton = styled(Button)`
     color: white;
   }
 `;
-
-
-
 const ScrollableRow = ({ movies }) => {
   const scrollRef = useRef();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -781,6 +778,8 @@ const Home = () => {
       >
         <FontAwesomeIcon icon={faArrowUp} />
       </BackToTopButton>
+
+      {/* WhatsApp Button */}
       <WhatsAppButton
         show={showBackToTop}
         as="a"
@@ -791,7 +790,7 @@ const Home = () => {
         title="Chat on WhatsApp"
       >
         <FontAwesomeIcon icon={faWhatsapp} />
-    </WhatsAppButton>
+      </WhatsAppButton>
     </ThemeProvider>
   );
 };
