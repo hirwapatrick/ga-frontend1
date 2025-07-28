@@ -487,11 +487,12 @@ const MovieDetail = () => {
                       >
                         {email.charAt(0)}
                       </div>
-                      <strong className="text-primary">{email}</strong>
+                      <div className="d-flex flex-column">
+                        <strong className="text-primary text-wrap">{email}</strong>
+                        <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                      </div>
                     </div>
-                    <Timestamp>
-                      {new Date(created_at).toLocaleString()}
-                    </Timestamp>
+                    <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
                   </div>
                   <p className="mb-0">{comment_text}</p>
                 </CommentCard>
@@ -499,31 +500,33 @@ const MovieDetail = () => {
             </div>
           )}
         </CommentSection>
-        {relatedMovies.length > 0 && (
-          <div className="mt-5">
-            <h3 className="mb-4">
-              <GoldText>Related Movies</GoldText>
-            </h3>
-            <RelatedMoviesGrid>
-              {relatedMovies.map((m) => (
-                <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
-                  <img
-                    src={
-                      m.movie_poster?.startsWith("http")
-                        ? m.movie_poster
-                        : movie.movie_poster
-                    }
-                    alt={m.title}
-                  />
-                  <h6>{m.title}</h6>
-                  <p>
-                    {m.genre} | {m.release_year}
-                  </p>
-                </RelatedMovieCard>
-              ))}
-            </RelatedMoviesGrid>
-          </div>
-        )}
+{relatedMovies.length > 0 && (
+  <div className="mt-5">
+    <h3 className="mb-4">
+      <GoldText>Related Movies</GoldText>
+    </h3>
+    <RelatedMoviesGrid>
+      {relatedMovies.map((m) => (
+        <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
+          <img
+            src={
+              m.movie_poster?.startsWith("http")
+                ? m.movie_poster
+                : movie.movie_poster
+            }
+            alt={m.title}
+          />
+          <h6>{m.title}</h6>
+          <p>
+            {m.genre} | {m.release_year}
+          </p>
+        </RelatedMovieCard>
+      ))}
+    </RelatedMoviesGrid>
+  </div>
+)}
+
+
       </Container>
     </PageWrapper>
   );

@@ -29,9 +29,10 @@ import {
   faMoon,
   faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
-import { API_BASE } from "../config"; // <-- Use API_BASE from config.js
+import { API_BASE } from "../config";
 
 // Global styles for light/dark mode
 const GlobalStyles = createGlobalStyle`
@@ -77,7 +78,8 @@ const darkTheme = {
   shadow: "rgba(0, 0, 0, 0.3)",
 };
 
-// Styled Components (only main ones shown here)
+// Styled Components
+
 const SearchWrapper = styled.div`
   position: relative;
   max-width: 400px;
@@ -311,7 +313,29 @@ const BackToTopButton = styled(Button)`
     color: #121212;
   }
 `;
+const WhatsAppButton = styled(Button)`
+  position: fixed;
+  bottom: 30px;
+  right: 90px; /* Leave space from BackToTopButton */
+  z-index: 1000;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  background-color: #25D366;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.5);
+  display: ${({ show }) => (show ? "flex" : "none")};
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 
+  &:hover {
+    background-color: #1ebe5d;
+    color: white;
+  }
+`;
 const ScrollableRow = ({ movies }) => {
   const scrollRef = useRef();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -325,7 +349,6 @@ const ScrollableRow = ({ movies }) => {
     const interval = setInterval(() => {
       scroll("right");
     }, 4000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -438,36 +461,7 @@ const Home = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
-  useEffect(() => {
-    axios.get(`${API_BASE}/movies`).then((res) => {
-      const simulated = res.data.map((movie) => ({
-        ...movie,
-        uploaded: timeSince(Date.now() - Math.random() * 6 * 60 * 60 * 1000),
-      }));
-      setMovies(simulated);
-      setLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.pageYOffset > 300) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-
+  // Function to convert elapsed ms to a "time ago" string
   const timeSince = (uploadTime) => {
     const seconds = Math.floor((currentTime - uploadTime) / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -479,6 +473,60 @@ const Home = () => {
     if (minutes > 0) return `${minutes}m ago`;
     return `${seconds}s ago`;
   };
+
+  useEffect(() => {
+    axios.get(`${API_BASE}/movies`)
+      .then((res) => {
+        const now = Date.now();
+        const updatedMovies = res.data.map((movie) => {
+          if (!movie.created_at) {
+            console.warn("Missing created_at for movie id:", movie.id);
+            return { ...movie, uploaded: "Unknown" };
+          }
+  
+          const uploadTime = new Date(movie.created_at).getTime();
+          return {
+            ...movie,
+            uploadTime,
+            uploaded: timeSince(uploadTime),
+          };
+        });
+        setMovies(updatedMovies);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch movies:", error);
+        setLoading(false);
+      });
+  }, []);
+
+
+
+  // Update currentTime every minute, to refresh "time ago"
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update uploaded times when currentTime changes
+  useEffect(() => {
+    setMovies((prev) =>
+      prev.map((movie) => ({
+        ...movie,
+        uploaded: timeSince(movie.uploadTime),
+      }))
+    );
+  }, [currentTime]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.pageYOffset > 300);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   const toggleGenreExpansion = (genre) => {
     setExpandedGenres((prev) => ({
@@ -626,7 +674,6 @@ const Home = () => {
                           borderRadius: 4,
                         }}
                       />
-
                       {movie.title}
                     </Link>
                   </li>
@@ -661,7 +708,6 @@ const Home = () => {
                     borderRadius: "12px",
                   }}
                 />
-
                 <Carousel.Caption>
                   <h5
                     style={{
@@ -732,6 +778,19 @@ const Home = () => {
       >
         <FontAwesomeIcon icon={faArrowUp} />
       </BackToTopButton>
+
+      {/* WhatsApp Button */}
+      <WhatsAppButton
+        show={showBackToTop}
+        as="a"
+        href="https://wa.me/250795217927"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        title="Chat on WhatsApp"
+      >
+        <FontAwesomeIcon icon={faWhatsapp} />
+      </WhatsAppButton>
     </ThemeProvider>
   );
 };

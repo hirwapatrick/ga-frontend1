@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faHome, faArrowUp } from "@fortawesome/free-solid-svg-icons";
@@ -40,6 +40,7 @@ export default function AdminDashboard() {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [comments, setComments] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const searchTimeoutRef = useRef(null);
 
   const genresList = [
     "Action Movies",
@@ -67,17 +68,24 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
-      navigate("/admin-login");
-    } else {
-      fetchMovies();
-    }
+    if (isAdmin !== "true") navigate("/admin-login");
+    else fetchMovies("");
   }, []);
 
-  const fetchMovies = async () => {
+  useEffect(() => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchMovies(searchText.trim());
+    }, 400);
+    return () => clearTimeout(searchTimeoutRef.current);
+  }, [searchText]);
+
+  const fetchMovies = async (search = "") => {
     setLoadingMovies(true);
     try {
-      const res = await axios.get(`${API_BASE}/movies`);
+      const res = await axios.get(`${API_BASE}/movies/admin`, {
+        params: { page: 1, limit: 10, q: search },
+      });
       setMovies(res.data);
     } catch {
       alert("Failed to load movies");
@@ -87,7 +95,6 @@ export default function AdminDashboard() {
 
   const openMovieModal = (mode, movie = null) => {
     setModalMode(mode);
-
     if (mode === "edit" && movie) {
       setCurrentMovie(movie);
       setPosterPreview(movie.movie_poster || null);
@@ -105,7 +112,6 @@ export default function AdminDashboard() {
       });
       setPosterPreview(null);
     }
-
     setPosterFile(null);
     setShowMovieModal(true);
   };
@@ -131,12 +137,10 @@ export default function AdminDashboard() {
       video_url,
       download_url,
     } = currentMovie;
-
     if (!title || !genre || !release_year || !description || !trailer_url || !video_url) {
       alert("Please fill in all required fields");
       return;
     }
-
     const formData = new FormData();
     formData.append("title", title);
     formData.append("genre", genre);
@@ -148,13 +152,9 @@ export default function AdminDashboard() {
     if (posterFile) formData.append("movie_poster", posterFile);
 
     try {
-      if (modalMode === "add") {
-        await axios.post(`${API_BASE}/movies`, formData);
-        alert("Movie added successfully");
-      } else {
-        await axios.put(`${API_BASE}/movies/${id}`, formData);
-        alert("Movie updated successfully");
-      }
+      if (modalMode === "add") await axios.post(`${API_BASE}/movies`, formData);
+      else await axios.put(`${API_BASE}/movies/${id}`, formData);
+      alert("Movie saved successfully");
       fetchMovies();
       closeMovieModal();
     } catch {
@@ -202,10 +202,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredMovies = movies.filter((m) =>
-    m.title.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   return (
     <div className="admin-dashboard">
       <Button variant="gold" className="back-to-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
@@ -232,7 +228,6 @@ export default function AdminDashboard() {
             style={{ backgroundColor: "#1e1e1e", color: "gold", borderColor: "gold" }}
           />
         </InputGroup>
-
         <Button variant="gold" className="mb-4" onClick={() => openMovieModal("add")}>Add New Movie</Button>
       </div>
 
@@ -252,7 +247,7 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredMovies.map((movie) => (
+            {movies.map((movie) => (
               <tr key={movie.id}>
                 <td className="white-text">{movie.id}</td>
                 <td className="white-text">{movie.title}</td>
@@ -276,38 +271,38 @@ export default function AdminDashboard() {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group controlId="title" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Title</Form.Label>
               <Form.Control name="title" value={currentMovie.title} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="genre" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Genre</Form.Label>
               <Form.Select name="genre" value={currentMovie.genre} onChange={handleMovieChange}>
                 <option value="">Select Genre</option>
                 {genresList.map((g) => (<option key={g}>{g}</option>))}
               </Form.Select>
             </Form.Group>
-            <Form.Group controlId="release_year" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Release Year</Form.Label>
               <Form.Control name="release_year" type="number" value={currentMovie.release_year} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="description" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Description</Form.Label>
               <Form.Control name="description" as="textarea" rows={2} value={currentMovie.description} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="trailer_url" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Trailer URL</Form.Label>
               <Form.Control name="trailer_url" value={currentMovie.trailer_url} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="video_url" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Video URL</Form.Label>
               <Form.Control name="video_url" value={currentMovie.video_url} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="download_url" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Download URL</Form.Label>
               <Form.Control name="download_url" value={currentMovie.download_url || ""} onChange={handleMovieChange} />
             </Form.Group>
-            <Form.Group controlId="poster" className="mb-2">
+            <Form.Group className="mb-2">
               <Form.Label>Movie Poster</Form.Label>
               <Form.Control type="file" accept="image/*" onChange={(e) => {
                 const file = e.target.files[0];
@@ -316,9 +311,7 @@ export default function AdminDashboard() {
                   const reader = new FileReader();
                   reader.onloadend = () => setPosterPreview(reader.result);
                   reader.readAsDataURL(file);
-                } else {
-                  setPosterPreview(null);
-                }
+                } else setPosterPreview(null);
               }} />
             </Form.Group>
             {posterPreview && (
