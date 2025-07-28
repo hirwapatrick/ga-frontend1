@@ -27,6 +27,7 @@ import {
   faStar as faSolidStar,
   faSun,
   faMoon,
+  faWhatsapp,
   faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
@@ -312,6 +313,30 @@ const BackToTopButton = styled(Button)`
     color: #121212;
   }
 `;
+const WhatsAppButton = styled(Button)`
+  position: fixed;
+  bottom: 30px;
+  right: 90px; /* Leave space from BackToTopButton */
+  z-index: 1000;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  background-color: #25D366;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.5);
+  display: ${({ show }) => (show ? "flex" : "none")};
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #1ebe5d;
+    color: white;
+  }
+`;
+
 
 
 const ScrollableRow = ({ movies }) => {
@@ -756,6 +781,17 @@ const Home = () => {
       >
         <FontAwesomeIcon icon={faArrowUp} />
       </BackToTopButton>
+      <WhatsAppButton
+        show={showBackToTop}
+        as="a"
+        href="https://wa.me/250795217927"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        title="Chat on WhatsApp"
+      >
+        <FontAwesomeIcon icon={faWhatsapp} />
+    </WhatsAppButton>
     </ThemeProvider>
   );
 };
