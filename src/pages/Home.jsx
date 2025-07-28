@@ -27,9 +27,9 @@ import {
   faStar as faSolidStar,
   faSun,
   faMoon,
-  faWhatsapp,
   faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
 import { API_BASE } from "../config";
