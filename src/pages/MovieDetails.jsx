@@ -21,7 +21,7 @@ import {
   faComment,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
-import { API_BASE } from "../config";
+import { API_BASE, API_KEY } from "../config";
 
 // === Styled Components ===
 const PageWrapper = styled.div`
@@ -211,7 +211,11 @@ const MovieDetail = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE}/movies/${id}`)
+      .get(`${API_BASE}/movies/${id}`,{
+         headers: {
+          'x-api-key': API_KEY
+         }
+      })
       .then((res) => {
         setMovie(res.data);
         setLikeCount(res.data.likes || 0);
@@ -222,7 +226,11 @@ const MovieDetail = () => {
   const fetchComments = () => {
     setLoadingComments(true);
     axios
-      .get(`${API_BASE}/movies/${id}/comments`)
+      .get(`${API_BASE}/movies/${id}/comments`, {
+          headers: {
+            'x-api-key': API_KEY
+          }
+      })
       .then((res) => setComments(res.data))
       .catch((err) => console.error(err))
       .finally(() => setLoadingComments(false));
@@ -234,7 +242,11 @@ const MovieDetail = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE}/movies/${id}/related`)
+      .get(`${API_BASE}/movies/${id}/related`, {
+        headers: {
+          'x-api-key': API_KEY
+        }
+      })
       .then((res) => setRelatedMovies(res.data))
       .catch((err) => console.error("Failed to load related movies", err));
   }, [id]);
@@ -249,6 +261,9 @@ const MovieDetail = () => {
     setSubmitting(true);
     try {
       const res = await axios.post(`${API_BASE}/movies/${id}/comments`, {
+        headers: {
+          'x-api-key': API_KEY
+        }
         email: email.trim(),
         comment_text: commentText.trim(),
       });
@@ -265,10 +280,18 @@ const MovieDetail = () => {
   const handleLike = async () => {
     try {
       if (liked) {
-        await axios.post(`${API_BASE}/movies/${id}/unlike`);
+        await axios.post(`${API_BASE}/movies/${id}/unlike`, {
+          headers: {
+            'x-api-key': API_KEY
+          }
+        });
         setLikeCount((prev) => prev - 1);
       } else {
-        await axios.post(`${API_BASE}/movies/${id}/like`);
+        await axios.post(`${API_BASE}/movies/${id}/like`, {
+          headers: {
+            'x-api-key': API_KEY
+          }
+        });
         setLikeCount((prev) => prev + 1);
       }
       setLiked(!liked);
@@ -500,31 +523,31 @@ const MovieDetail = () => {
             </div>
           )}
         </CommentSection>
-{relatedMovies.length > 0 && (
-  <div className="mt-5">
-    <h3 className="mb-4">
-      <GoldText>Related Movies</GoldText>
-    </h3>
-    <RelatedMoviesGrid>
-      {relatedMovies.map((m) => (
-        <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
-          <img
-            src={
-              m.movie_poster?.startsWith("http")
-                ? m.movie_poster
-                : movie.movie_poster
-            }
-            alt={m.title}
-          />
-          <h6>{m.title}</h6>
-          <p>
-            {m.genre} | {m.release_year}
-          </p>
-        </RelatedMovieCard>
-      ))}
-    </RelatedMoviesGrid>
-  </div>
-)}
+        {relatedMovies.length > 0 && (
+          <div className="mt-5">
+            <h3 className="mb-4">
+              <GoldText>Related Movies</GoldText>
+            </h3>
+            <RelatedMoviesGrid>
+              {relatedMovies.map((m) => (
+                <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
+                  <img
+                    src={
+                      m.movie_poster?.startsWith("http")
+                        ? m.movie_poster
+                        : movie.movie_poster
+                    }
+                    alt={m.title}
+                  />
+                  <h6>{m.title}</h6>
+                  <p>
+                    {m.genre} | {m.release_year}
+                  </p>
+                </RelatedMovieCard>
+              ))}
+            </RelatedMoviesGrid>
+          </div>
+        )}
 
 
       </Container>
