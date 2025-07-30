@@ -260,13 +260,18 @@ const MovieDetail = () => {
     }
     setSubmitting(true);
     try {
-      const res = await axios.post(`${API_BASE}/movies/${id}/comments`, {
-        headers: {
-          'x-api-key': API_KEY
+      const res = await axios.post(
+        `${API_BASE}/movies/${id}/comments`,
+        {
+          email: email.trim(),
+          comment_text: commentText.trim(),
+        },
+        {
+          headers: {
+            'x-api-key': API_KEY,
+          },
         }
-        email: email.trim(),
-        comment_text: commentText.trim(),
-      });
+      );
       setComments((prev) => [res.data, ...prev]);
       setEmail("");
       setCommentText("");
