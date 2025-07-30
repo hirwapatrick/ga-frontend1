@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff } from "react-feather";
 import { API_BASE, API_KEY } from "../config";
 
+axios.defaults.headers.common['x-api-key'] = API_KEY;
+
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,15 +29,10 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-    const response = await axios.post(
-      `${API_BASE}/admin/login`,
-      { email, password },
-      {
-        headers: {
-          "x-api-key": API_KEY,
-        },
-      }
-    );
+      const response = await axios.post(`${API_BASE}/admin/login`, {
+        email,
+        password,
+      });
 
       const { user } = response.data;
 
