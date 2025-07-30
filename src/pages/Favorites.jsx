@@ -16,7 +16,6 @@ import {
   faMoon,
   faSun,
 } from "@fortawesome/free-solid-svg-icons";
-import { API_BASE, API_KEY } from "../config";
 import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle`
