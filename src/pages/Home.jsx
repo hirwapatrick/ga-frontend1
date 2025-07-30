@@ -34,6 +34,8 @@ import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
 import { API_BASE, API_KEY } from "../config";
 
+axios.defaults.headers.common['x-api-key'] = API_KEY;
+
 // Global styles for light/dark mode
 const GlobalStyles = createGlobalStyle`
   body {
@@ -475,11 +477,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-      axios.get(`${API_BASE}/movies`,{
-        headers: {
-          'x-api-key': API_KEY
-        }
-      })
+      axios.get(`${API_BASE}/movies`)
       .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
