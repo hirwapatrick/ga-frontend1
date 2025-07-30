@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "react-feather";
-import { API_BASE } from "../config"; // ✅ import API base URL
+import { API_BASE, API_KEY } from "../config";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -27,10 +27,15 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_BASE}/admin/login`, {
-        email,
-        password,
-      });
+    const response = await axios.post(
+      `${API_BASE}/admin/login`,
+      { email, password },
+      {
+        headers: {
+          "x-api-key": API_KEY,
+        },
+      }
+    );
 
       const { user } = response.data;
 
