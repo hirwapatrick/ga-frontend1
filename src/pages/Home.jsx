@@ -32,7 +32,7 @@ import {
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
-import { API_BASE } from "../config";
+import { API_BASE, API_KEY } from "../config";
 
 // Global styles for light/dark mode
 const GlobalStyles = createGlobalStyle`
@@ -475,7 +475,11 @@ const Home = () => {
   };
 
   useEffect(() => {
-    axios.get(`${API_BASE}/movies`)
+      axios.get(`${API_BASE}/movies`,{
+        headers: {
+          'x-api-key': API_KEY
+        }
+      })
       .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
