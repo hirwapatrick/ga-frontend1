@@ -261,17 +261,16 @@ const MovieDetail = () => {
     setSubmitting(true);
     try {
       const res = await axios.post(
-        `${API_BASE}/movies/${id}/comments`,
+        `${API_BASE}/movies/${id}/comments`, 
         {
           email: email.trim(),
-          comment_text: commentText.trim(),
+          comment_text: commentText.trim()
         },
         {
           headers: {
             'x-api-key': API_KEY,
           },
-        }
-      );
+      });
       setComments((prev) => [res.data, ...prev]);
       setEmail("");
       setCommentText("");
@@ -292,7 +291,7 @@ const MovieDetail = () => {
         });
         setLikeCount((prev) => prev - 1);
       } else {
-        await axios.post(`${API_BASE}/movies/${id}/like`, {
+        await axios.post(`${API_BASE}/movies/${id}/like`, {}, {
           headers: {
             'x-api-key': API_KEY
           }
