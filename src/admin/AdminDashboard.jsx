@@ -87,6 +87,9 @@ export default function AdminDashboard() {
     setLoadingMovies(true);
     try {
       const res = await axios.get(`${API_BASE}/movies/admin`, {
+        headers: {
+          'x-api-key': API_KEY
+        },
         params: { page: 1, limit: 10, q: search },
       });
       setMovies(res.data);
