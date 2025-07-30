@@ -16,6 +16,9 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE, API_KEY } from "../config";
 import "../styles/AdminDashboard.css";
 
+
+axios.defaults.headers.common['x-api-key'] = API_KEY;
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
@@ -84,9 +87,6 @@ export default function AdminDashboard() {
     setLoadingMovies(true);
     try {
       const res = await axios.get(`${API_BASE}/movies/admin`, {
-        headers: {
-          'x-api-key': API_KEY
-        }
         params: { page: 1, limit: 10, q: search },
       });
       setMovies(res.data);
@@ -155,19 +155,8 @@ export default function AdminDashboard() {
     if (posterFile) formData.append("movie_poster", posterFile);
 
     try {
-      if (modalMode === "add") {
-        await axios.post(`${API_BASE}/movies`, formData, {
-          headers: {
-            'x-api-key': API_KEY,
-          },
-        });
-      } else {
-        await axios.put(`${API_BASE}/movies/${id}`, formData, {
-          headers: {
-            'x-api-key': API_KEY,
-          },
-        });
-      }
+      if (modalMode === "add") await axios.post(`${API_BASE}/movies`, formData);
+      else await axios.put(`${API_BASE}/movies/${id}`, formData);
       alert("Movie saved successfully");
       fetchMovies();
       closeMovieModal();
@@ -179,11 +168,7 @@ export default function AdminDashboard() {
   const handleMovieDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this movie?")) return;
     try {
-      await axios.delete(`${API_BASE}/movies/${id}`, {
-        headers: {
-          'x-api-key': API_KEY,
-        }
-      });
+      await axios.delete(`${API_BASE}/movies/${id}`);
       fetchMovies();
     } catch {
       alert("Failed to delete movie");
@@ -195,11 +180,7 @@ export default function AdminDashboard() {
     setShowCommentsModal(true);
     setCommentsLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/movies/${movie.id}/comments`, {
-      headers: {
-        'x-api-key': API_KEY,
-      }
-      });
+      const res = await axios.get(`${API_BASE}/movies/${movie.id}/comments`);
       setComments(res.data);
     } catch {
       alert("Failed to load comments");
@@ -216,16 +197,8 @@ export default function AdminDashboard() {
   const handleCommentDelete = async (id) => {
     if (!window.confirm("Delete this comment?")) return;
     try {
-      await axios.delete(`${API_BASE}/comments/${id}`, {
-      headers: {
-        'x-api-key': API_KEY,
-      }
-      });
-      const res = await axios.get(`${API_BASE}/movies/${selectedMovie.id}/comments`, {
-      headers: {
-        'x-api-key': API_KEY,
-      }
-      });
+      await axios.delete(`${API_BASE}/comments/${id}`);
+      const res = await axios.get(`${API_BASE}/movies/${selectedMovie.id}/comments`);
       setComments(res.data);
     } catch {
       alert("Failed to delete comment");
