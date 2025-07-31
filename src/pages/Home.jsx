@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
@@ -5,36 +6,33 @@ import {
   Form,
   Card,
   Button,
-  Navbar,
-  Nav,
   Spinner,
   OverlayTrigger,
   Tooltip,
   FormCheck,
   Carousel,
 } from "react-bootstrap";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import Footer from "./Footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import {
+  faSearch,
   faClock,
   faArrowRight,
   faFilm,
   faChevronLeft,
   faChevronRight,
   faStar as faSolidStar,
-  faSun,
-  faMoon,
   faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
 import { API_BASE, API_KEY } from "../config";
+import MainNav from "./MainNav";
 
-axios.defaults.headers.common['x-api-key'] = API_KEY;
+axios.defaults.headers.common["x-api-key"] = API_KEY;
 
 // Global styles for light/dark mode
 const GlobalStyles = createGlobalStyle`
@@ -128,13 +126,6 @@ const SearchResults = styled.ul`
       background: ${({ theme }) => theme.hover};
     }
   }
-`;
-
-const Logo = styled.div`
-  font-weight: bold;
-  font-size: 1.5rem;
-  color: ${({ theme }) => theme.accent};
-  user-select: none;
 `;
 
 const ScrollContainer = styled.div`
@@ -324,7 +315,7 @@ const WhatsAppButton = styled(Button)`
   width: 48px;
   height: 48px;
   font-size: 1.5rem;
-  background-color: #25D366;
+  background-color: #25d366;
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(37, 211, 102, 0.5);
@@ -338,9 +329,10 @@ const WhatsAppButton = styled(Button)`
     color: white;
   }
 `;
+
 const ScrollableRow = ({ movies }) => {
   const scrollRef = useRef();
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   const scroll = (direction) => {
     const amount = direction === "right" ? 200 : -200;
@@ -463,7 +455,7 @@ const Home = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // Function to convert elapsed ms to a "time ago" string
+  // Convert elapsed ms to "time ago"
   const timeSince = (uploadTime) => {
     const seconds = Math.floor((currentTime - uploadTime) / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -477,7 +469,8 @@ const Home = () => {
   };
 
   useEffect(() => {
-      axios.get(`${API_BASE}/movies`)
+    axios
+      .get(`${API_BASE}/movies`)
       .then((res) => {
         const now = Date.now();
         const updatedMovies = res.data.map((movie) => {
@@ -485,314 +478,209 @@ const Home = () => {
             console.warn("Missing created_at for movie id:", movie.id);
             return { ...movie, uploaded: "Unknown" };
           }
-  
-          const uploadTime = new Date(movie.created_at).getTime();
-          return {
-            ...movie,
-            uploadTime,
-            uploaded: timeSince(uploadTime),
-          };
+          return { ...movie, uploaded: timeSince(new Date(movie.created_at).getTime()) };
         });
         setMovies(updatedMovies);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Failed to fetch movies:", error);
+      .catch((err) => {
+        console.error("Error fetching movies:", err);
         setLoading(false);
       });
-  }, []);
-
-
-
-  // Update currentTime every minute, to refresh "time ago"
-  useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update uploaded times when currentTime changes
-  useEffect(() => {
-    setMovies((prev) =>
-      prev.map((movie) => ({
-        ...movie,
-        uploaded: timeSince(movie.uploadTime),
-      }))
-    );
   }, [currentTime]);
 
   useEffect(() => {
-    const onScroll = () => {
-      setShowBackToTop(window.pageYOffset > 300);
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000);
+    return () => clearInterval(timer);
   }, []);
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const filteredMovies = movies.filter((movie) =>
+    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const toggleGenreExpansion = (genre) => {
+  // Group movies by genre
+  const genres = {};
+  filteredMovies.forEach((movie) => {
+    if (!genres[movie.genre]) {
+      genres[movie.genre] = [];
+    }
+    genres[movie.genre].push(movie);
+  });
+
+  // Toggle genre expand/collapse
+  const toggleGenreExpand = (genre) => {
     setExpandedGenres((prev) => ({
       ...prev,
       [genre]: !prev[genre],
     }));
   };
 
-  const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const latestMovies = [...filteredMovies].slice(0, 10);
+  // Show back to top button on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.pageYOffset > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  if (loading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" role="status" variant="warning">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
-    );
-  }
+  // Top 5 movies for slideshow (by upload time)
+  const topMovies = [...movies]
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    .slice(0, 5);
 
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <GlobalStyles />
-      <Navbar
-        bg={darkMode ? "dark" : "light"}
-        variant={darkMode ? "dark" : "light"}
-        expand="md"
-        className="mb-4"
-        sticky="top"
-      >
-        <Container>
-          <Navbar.Brand as={Link} to="/">
-            <Logo>
-              <img
-                src="./logo/logo.png"
-                alt="Logo"
-                style={{ width: "80px", height: "80px" }}
-              />
-            </Logo>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
-              <Nav.Link
-                as={NavLink}
-                to="/"
-                end
-                style={{ fontFamily: "Arial, sans-serif", fontWeight: "bold" }}
-              >
-                Home
-              </Nav.Link>
-              <Nav.Link
-                as={NavLink}
-                to="/favorites"
-                style={{ fontFamily: "Arial, sans-serif", fontWeight: "bold" }}
-              >
-                Favorites
-              </Nav.Link>
 
-              <ToggleContainer>
-                <FontAwesomeIcon
-                  icon={darkMode ? faSun : faMoon}
-                  className="me-2"
-                  style={{ color: darkMode ? "gold" : "#6c757d" }}
-                />
-                <FormCheck
-                  type="switch"
-                  id="dark-mode-switch"
-                  checked={darkMode}
-                  onChange={() => setDarkMode(!darkMode)}
-                />
-              </ToggleContainer>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      {/* Use MainNav component */}
+      <MainNav darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <Container style={{ position: "relative" }}>
-        <h2
-          className="text-center mb-4"
-          style={{
-            color: darkMode ? "gold" : "#d4af37",
-            fontFamily: "AmazObitaemOstrovBold,sans-serif",
-          }}
-        >
-          <img
-            src="./logo/logo.png"
-            alt="Logo"
-            style={{ width: "70px", height: "70px" }}
+        <SearchWrapper>
+          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          <Form.Control
+            type="search"
+            placeholder="Search movies"
+            className={darkMode ? "dark-placeholder" : "light-placeholder"}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setShowResults(true)}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
           />
-          GETAGASOBANUYE
-        </h2>
-        <Form
-          className="mb-3"
-          style={{ maxWidth: "400px", margin: "auto", position: "relative" }}
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <SearchWrapper>
-            <FontAwesomeIcon icon={faSearch} className="search-icon" />
-            <Form.Control
-              type="text"
-              placeholder="Search movies..."
-              className={darkMode ? "dark-placeholder" : "light-placeholder"}
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setShowResults(true);
-              }}
-              onBlur={() => setTimeout(() => setShowResults(false), 200)}
-              onFocus={() => setShowResults(true)}
-              style={{
-                backgroundColor: darkMode ? "#1e293b" : "#ffffff",
-                color: darkMode ? "#f1f5f9" : "#1e293b",
-                borderColor: darkMode ? "#334155" : "#ced4da",
-                transition: "all 0.3s ease-in-out",
-                boxShadow: darkMode ? "0 0 8px #00ffe0" : "0 0 6px #00c3ff",
-              }}
-            />
-          </SearchWrapper>
-
           {showResults && searchTerm && (
             <SearchResults>
               {filteredMovies.length > 0 ? (
-                filteredMovies.slice(0, 8).map((movie) => (
-                  <li key={movie.id}>
-                    <Link
-                      to={`/movie/${movie.id}`}
-                      style={{
-                        color: darkMode ? "#e0e0e0" : "#212529",
-                        textDecoration: "none",
-                      }}
-                    >
-                      <img
-                        src={movie.movie_poster}
-                        alt={movie.title}
-                        style={{
-                          width: 40,
-                          height: 30,
-                          marginRight: 8,
-                          verticalAlign: "middle",
-                          borderRadius: 4,
-                        }}
-                      />
+                filteredMovies.slice(0, 7).map((movie) => (
+                  <li key={movie.id} onMouseDown={() => setSearchTerm(movie.title)}>
+                    <Link to={`/movie/${movie.id}`} style={{ color: "inherit", textDecoration: "none" }}>
                       {movie.title}
                     </Link>
                   </li>
                 ))
               ) : (
-                <li
-                  style={{
-                    padding: "12px",
-                    color: darkMode ? "#aaa" : "#6c757d",
-                    textAlign: "center",
-                  }}
-                >
-                  No movies found
-                </li>
+                <li>No results found</li>
               )}
             </SearchResults>
           )}
-        </Form>
+        </SearchWrapper>
 
-        {/* Top 5 Movies Slideshow */}
-        <Carousel fade className="mb-5">
-          {filteredMovies.slice(0, 5).map((movie) => (
+        {/* Slideshow */}
+        <Carousel
+          fade
+          indicators={false}
+          interval={3000}
+          pause={false}
+          style={{ marginTop: "2rem" }}
+        >
+          {topMovies.map((movie) => (
             <Carousel.Item key={movie.id}>
               <Link to={`/movie/${movie.id}`}>
                 <img
                   className="d-block w-100"
                   src={movie.movie_poster}
                   alt={movie.title}
-                  style={{
-                    maxHeight: "500px",
-                    objectFit: "cover",
-                    borderRadius: "12px",
-                  }}
+                  style={{ maxHeight: "450px", objectFit: "cover" }}
                 />
                 <Carousel.Caption>
-                  <h5
-                    style={{
-                      color: "gold",
-                      textShadow: "1px 1px 4px black",
-                      fontSize: "3rem",
-                    }}
-                  >
-                    {movie.title}
-                  </h5>
+                  <h3>{movie.title}</h3>
                 </Carousel.Caption>
               </Link>
             </Carousel.Item>
           ))}
         </Carousel>
 
-        {/* Latest Movies */}
-        <h4
-          className="mb-3 d-flex align-items-center gap-2"
-          style={{ color: darkMode ? "gold" : "#d4af37" }}
-        >
-          Latest Movies <FontAwesomeIcon icon={faClock} />
-        </h4>
-        <ScrollableRow movies={latestMovies} />
+        {/* Recently Added Section */}
+        <h2 style={{ marginTop: "3rem" }}>Recently Added</h2>
+        {loading ? (
+          <Spinner animation="border" variant="warning" />
+        ) : (
+          <ScrollableRow movies={movies.slice(0, 15)} />
+        )}
 
-        {/* Genre Rows */}
-        {Object.entries(
-          filteredMovies.reduce((acc, movie) => {
-            if (!acc[movie.genre]) acc[movie.genre] = [];
-            acc[movie.genre].push(movie);
-            return acc;
-          }, {})
-        ).map(([genre, genreMovies]) => (
-          <div key={genre} className="mb-5">
-            <h5
-              className="mb-3 d-flex align-items-center gap-2"
-              style={{ color: darkMode ? "gold" : "#d4af37" }}
-            >
-              {genre} <FontAwesomeIcon icon={faFilm} />
-            </h5>
-            <ScrollableRow
-              movies={
-                expandedGenres[genre] ? genreMovies : genreMovies.slice(0, 10)
-              }
-            />
-            {genreMovies.length > 10 && (
-              <div className="text-center mt-2">
-                <Button
-                  variant="outline-warning"
-                  size="sm"
-                  onClick={() => toggleGenreExpansion(genre)}
-                >
-                  {expandedGenres[genre] ? "View Less" : "View More"}
-                </Button>
-              </div>
-            )}
-          </div>
+        {/* Genre Sections */}
+        {Object.entries(genres).map(([genre, moviesByGenre]) => (
+          <section key={genre}>
+            <h3 style={{ marginTop: "2rem", marginBottom: "1rem" }}>
+              {genre}{" "}
+              <Button
+                variant="outline-warning"
+                size="sm"
+                onClick={() => toggleGenreExpand(genre)}
+              >
+                {expandedGenres[genre] ? "View Less" : "View More"}
+              </Button>
+            </h3>
+
+            <ScrollContainer style={{ gap: "1rem", padding: "0 2rem" }}>
+              {(expandedGenres[genre]
+                ? moviesByGenre
+                : moviesByGenre.slice(0, 7)
+              ).map((movie) => (
+                <StyledCard key={movie.id}>
+                  <div className="movie-card">
+                    <Card.Img
+                      variant="top"
+                      src={movie.movie_poster}
+                      alt={movie.title}
+                      className="card-img-top"
+                      style={{ height: "280px" }}
+                    />
+                    <Card.Body>
+                      <Card.Title>{movie.title}</Card.Title>
+                      <Card.Text>
+                        {movie.genre} | {movie.release_year}
+                      </Card.Text>
+                      <Card.Text className="time-text">
+                        <FontAwesomeIcon icon={faClock} className="me-1" />
+                        {movie.uploaded}
+                      </Card.Text>
+                      <Link to={`/movie/${movie.id}`}>
+                        <Button size="sm" variant="light">
+                          Details <FontAwesomeIcon icon={faArrowRight} />
+                        </Button>
+                      </Link>
+                    </Card.Body>
+                  </div>
+                </StyledCard>
+              ))}
+            </ScrollContainer>
+          </section>
         ))}
+
+        {/* Footer */}
+        <Footer darkMode={darkMode} />
+
+        {/* Back to Top Button */}
+        <BackToTopButton
+          show={showBackToTop}
+          onClick={scrollToTop}
+          aria-label="Back to top"
+          title="Back to top"
+        >
+          <FontAwesomeIcon icon={faArrowUp} />
+        </BackToTopButton>
+
+        {/* WhatsApp Contact Button */}
+        <WhatsAppButton
+          show={showBackToTop}
+          as="a"
+          href="https://wa.me/250795217927"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          title="Chat on WhatsApp"
+        >
+          <FontAwesomeIcon icon={faWhatsapp} />
+        </WhatsAppButton>
       </Container>
-      <Footer darkMode={darkMode} />
-
-      {/* Back to Top Button */}
-      <BackToTopButton
-        show={showBackToTop}
-        onClick={scrollToTop}
-        aria-label="Back to top"
-        title="Back to top"
-      >
-        <FontAwesomeIcon icon={faArrowUp} />
-      </BackToTopButton>
-
-      {/* WhatsApp Button */}
-      <WhatsAppButton
-        show={showBackToTop}
-        as="a"
-        href="https://wa.me/250795217927"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
-        title="Chat on WhatsApp"
-      >
-        <FontAwesomeIcon icon={faWhatsapp} />
-      </WhatsAppButton>
     </ThemeProvider>
   );
 };
