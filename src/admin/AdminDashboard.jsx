@@ -86,10 +86,7 @@ export default function AdminDashboard() {
   const fetchMovies = async (search = "") => {
     setLoadingMovies(true);
     try {
-      const res = await axios.get(`${API_BASE}/movies`, {
-        headers: {
-          'x-api-key': API_KEY
-        },
+      const res = await axios.get(`${API_BASE}/movies/admin`, {
         params: { page: 1, limit: 10, q: search },
       });
       setMovies(res.data);
