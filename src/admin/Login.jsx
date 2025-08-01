@@ -11,6 +11,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "react-feather";
 import { API_BASE, API_KEY } from "../config";
+import { Link } from "react-router-dom";
 
 axios.defaults.headers.common['x-api-key'] = API_KEY;
 
@@ -77,6 +78,7 @@ export default function Login({ onLogin }) {
           }}
         >
           <div className="text-center mb-3">
+            <Link to="/">
             <Image
               src="./logo/logo.png"
               alt="Logo"
@@ -84,6 +86,7 @@ export default function Login({ onLogin }) {
               fluid
               roundedCircle
             />
+            </Link>
           </div>
 
           <h3 className="text-center mb-4" style={{ color: "gold" }}>

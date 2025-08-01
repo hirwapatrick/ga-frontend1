@@ -19,11 +19,16 @@ import {
   faHeart,
   faPaperPlane,
   faComment,
+  faClock,
+  faStar as faSolidStar,
 } from "@fortawesome/free-solid-svg-icons";
-import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
+import {
+  faHeart as farHeart,
+  faStar as faRegularStar,
+} from "@fortawesome/free-regular-svg-icons";
+import { useFavorites } from "../context/FavoritesContext";
 import { API_BASE, API_KEY } from "../config";
 
-// === Styled Components ===
 const PageWrapper = styled.div`
   background-color: #0f172a;
   min-height: 100vh;
@@ -38,52 +43,6 @@ const MovieHeader = styled.div`
   border-radius: 15px;
   margin-bottom: 2rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-`;
-const RelatedMoviesGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: start;
-`;
-
-const RelatedMovieCard = styled(Link)`
-  flex: 0 0 160px;
-  background-color: #1e293b;
-  color: white;
-  border-radius: 12px;
-  box-shadow: 0 0 8px rgb(212 175 55 / 0.5);
-  border: 1px solid #d4af37;
-  overflow: hidden;
-  text-decoration: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 20px rgb(212 175 55 / 0.9);
-  }
-
-  img {
-    width: 100%;
-    height: 230px;
-    object-fit: cover;
-    border-bottom: 1px solid #d4af37;
-  }
-
-  h6 {
-    margin: 0.6rem 0 0 0.7rem;
-    font-weight: 700;
-    font-size: 1rem;
-    color: #d4af37;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  p {
-    margin: 0.3rem 0 0.7rem 0.7rem;
-    font-size: 0.85rem;
-    color: #ccc;
-  }
 `;
 
 const GoldText = styled.span`
@@ -177,7 +136,114 @@ const VideoContainer = styled.div`
   }
 `;
 
-axios.defaults.headers.common['x-api-key'] = API_KEY;
+const RelatedMoviesContainer = styled.div`
+  margin-top: 3rem;
+`;
+
+const RelatedMoviesTitle = styled.h3`
+  color: #d4af37;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+`;
+
+const RelatedMoviesGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+`;
+
+const RelatedMovieCard = styled(Link)`
+  --white: hsl(0, 0%, 100%);
+  --black: hsl(240, 15%, 9%);
+  --paragraph: hsl(0, 0%, 83%);
+  --primary: hsl(189, 92%, 58%);
+
+  position: relative;
+  width: 160px;
+  background-color: hsla(240, 15%, 9%, 1);
+  background-image: radial-gradient(
+      at 88% 40%,
+      hsla(240, 15%, 9%, 1) 0px,
+      transparent 85%
+    ),
+    radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+    radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1) 0px, transparent 85%),
+    radial-gradient(at 0% 64%, hsl(189, 99%, 26%) 0px, transparent 85%),
+    radial-gradient(at 41% 94%, hsl(189, 97%, 36%) 0px, transparent 85%),
+    radial-gradient(at 100% 99%, hsl(188, 94%, 13%) 0px, transparent 85%);
+  border-radius: 0.8rem;
+  box-shadow: 0px -16px 24px 0px rgba(255, 255, 255, 0.25) inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3), 0 0 25px rgba(0, 255, 255, 0.2);
+    color: inherit;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background-size: 400% 400%;
+    border-radius: inherit;
+    animation: flowing-border 8s linear infinite;
+  }
+
+  @keyframes flowing-border {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 0.8rem 0.8rem 0 0;
+  }
+
+  .card-body {
+    padding: 0.5rem;
+    text-align: center;
+  }
+
+  .card-title {
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .card-text {
+    color: var(--paragraph);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .time-text {
+    color: var(--paragraph);
+    font-size: 0.65rem;
+  }
+`;
+
+axios.defaults.headers.common["x-api-key"] = API_KEY;
 
 const MovieDetail = () => {
   const { id } = useParams();
@@ -192,6 +258,7 @@ const MovieDetail = () => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [relatedMovies, setRelatedMovies] = useState([]);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   const getYouTubeId = (urlOrId) => {
     if (!urlOrId) return null;
@@ -490,11 +557,17 @@ const MovieDetail = () => {
                         {email.charAt(0)}
                       </div>
                       <div className="d-flex flex-column">
-                        <strong className="text-primary text-wrap">{email}</strong>
-                        <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                        <strong className="text-primary text-wrap">
+                          {email}
+                        </strong>
+                        <Timestamp>
+                          {new Date(created_at).toLocaleString()}
+                        </Timestamp>
                       </div>
                     </div>
-                    <Timestamp>{new Date(created_at).toLocaleString()}</Timestamp>
+                    <Timestamp>
+                      {new Date(created_at).toLocaleString()}
+                    </Timestamp>
                   </div>
                   <p className="mb-0">{comment_text}</p>
                 </CommentCard>
@@ -502,31 +575,42 @@ const MovieDetail = () => {
             </div>
           )}
         </CommentSection>
-      {relatedMovies.length > 0 && (
-        <div className="mt-5">
-          <h3 className="mb-4">
-            <GoldText>Related Movies</GoldText>
-          </h3>
-          <RelatedMoviesGrid>
-            {relatedMovies.map((m) => (
-              <RelatedMovieCard to={`/movie/${m.id}`} key={m.id}>
-                <img
-                  src={
-                    m.movie_poster?.startsWith("http")
-                      ? m.movie_poster
-                      : movie.movie_poster
-                  }
-                  alt={m.title}
-                />
-                <h6>{m.title}</h6>
-                <p>
-                  {m.genre} | {m.release_year}
-                </p>
-              </RelatedMovieCard>
-            ))}
-          </RelatedMoviesGrid>
-        </div>
-      )}
+
+        {relatedMovies.length > 0 && (
+          <RelatedMoviesContainer>
+            <RelatedMoviesTitle>Related Movies</RelatedMoviesTitle>
+            <RelatedMoviesGrid>
+              {relatedMovies.map((m) => (
+                <RelatedMovieCard key={m.id} to={`/movie/${m.id}`}>
+                  <img
+                    src={m.movie_poster}
+                    alt={m.title}
+                    className="card-img-top"
+                  />
+                  <div className="card-body">
+                    <h6 className="card-title">
+                      {m.title.split(" ").map((word, i) => (
+                        <React.Fragment key={i}>
+                          {word} {i % 4 === 3 ? <br /> : null}
+                        </React.Fragment>
+                      ))}
+                    </h6>
+
+                    <p className="card-text">
+                      {m.genre} | {m.release_year}
+                    </p>
+                    {m.uploaded && (
+                      <p className="time-text">
+                        <FontAwesomeIcon icon={faClock} className="me-1" />
+                        {m.uploaded}
+                      </p>
+                    )}
+                  </div>
+                </RelatedMovieCard>
+              ))}
+            </RelatedMoviesGrid>
+          </RelatedMoviesContainer>
+        )}
       </Container>
     </PageWrapper>
   );
