@@ -31,6 +31,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { faStar as faRegularStar } from "@fortawesome/free-regular-svg-icons";
 import { useFavorites } from "../context/FavoritesContext";
 import { API_BASE, API_KEY } from "../config";
+import { width } from "@fortawesome/free-brands-svg-icons/fa11ty";
 
 axios.defaults.headers.common["x-api-key"] = API_KEY;
 
@@ -689,6 +690,29 @@ const Home = ({ darkMode }) => {
             </Carousel.Item>
           ))}
         </Carousel>
+        {/* Washahost Banner */}
+
+        <div style={{ textAlign: "center", margin: "30px 0" }}>
+          <a
+            href="https://my.washahost.com/aff.php?aff=21"
+            style={{ display: "inline-block", textDecoration: "none" }}
+          >
+            <img
+              src="/washahost.png"
+              alt="Washahost Banner"
+              style={{
+                width: "30%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto 10px",
+              }}
+            />
+            <FontAwesomeIcon
+              icon={faArrowRight}
+              style={{ fontSize: "1.8rem", color: "#ffae00ff" }}
+            />
+          </a>
+        </div>
 
         {/* Latest Movies */}
         <h4
