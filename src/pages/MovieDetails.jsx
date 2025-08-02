@@ -565,9 +565,6 @@ const MovieDetail = () => {
                         </Timestamp>
                       </div>
                     </div>
-                    <Timestamp>
-                      {new Date(created_at).toLocaleString()}
-                    </Timestamp>
                   </div>
                   <p className="mb-0">{comment_text}</p>
                 </CommentCard>
